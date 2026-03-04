@@ -35,7 +35,7 @@ st.markdown("""
 # 3. Sidebar Menu
 with st.sidebar:
     st.markdown('<p class="menu-header">📌 Main Menu</p>', unsafe_allow_html=True)
-    page = st.radio("", ["Home", "Features", "About"], label_visibility="collapsed")
+    page = st.radio("", ["Home",  "About"], label_visibility="collapsed")
 
 # 4. Main Page Content
 if page == "Home":
