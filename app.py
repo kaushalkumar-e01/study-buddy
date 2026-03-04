@@ -57,9 +57,6 @@ if page == "Home":
     with col2:
         st.success("🛠️ **Status**\nFrontend structure is live. Logic will be added later.")
 
-elif page == "Features":
-    st.title("🌟 Future Features")
-    st.write("This is a placeholder for the amazing tools we will build soon.")
 
 elif page == "About":
     st.title("📖 About Study Buddy")
