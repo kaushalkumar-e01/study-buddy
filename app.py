@@ -1,5 +1,17 @@
 import time
 import streamlit as st
+import base64
+
+def play_sound():
+    # A short, professional 'ding' sound link
+    sound_url = "timer_sound.mp3"
+    html_string = f"""
+        <audio autoplay>
+            <source src="{sound_url}" type="audio/mp3">
+        </audio>
+    """
+    st.components.v1.html(html_string, height=0)
+
 
 # 1. Page Config
 st.set_page_config(page_title="Study Buddy", page_icon="🎒", layout="wide",initial_sidebar_state="collapsed")
@@ -126,6 +138,7 @@ with col2:
             
             if st.session_state.current_seconds == 0:
                 st.session_state.timer_running = False
+                play_sound() # <--- CALL THE SOUND HERE
                 st.success("Session complete! Great work, Kaushalkumar. ☕")
                 st.rerun()
         
