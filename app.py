@@ -191,3 +191,23 @@ with sw_col2:
     hours, mins = divmod(mins, 60)
     time_str = f"{hours:02d}:{mins:02d}:{secs:02d}"
     sw_display.markdown(f'<div class="stopwatch-display">{time_str}</div>', unsafe_allow_html=True)
+
+import datetime
+
+st.divider()
+st.subheader("💡 Daily Engineering Inspiration")
+
+# A few professional quotes for your portal
+quotes = [
+    "“The only way to do great work is to love what you do.” – Steve Jobs",
+    "“First, solve the problem. Then, write the code.” – John Johnson",
+    "“Engineering is not only about building things, it's about solving problems.”",
+    "“Your most unhappy customers are your greatest source of learning.” – Bill Gates",
+    "“Stay hungry, stay foolish.” – Steve Jobs"
+]
+
+# This logic picks a quote based on the day of the year
+day_of_year = datetime.datetime.now().timetuple().tm_yday
+quote_index = day_of_year % len(quotes)
+
+st.info(quotes[quote_index])
