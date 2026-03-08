@@ -1,5 +1,6 @@
 import time
 import datetime
+import requests
 import streamlit as st
 
 # --- 1. FUNCTIONS ---
@@ -67,18 +68,27 @@ if page == "Home":
     with col_info2:
         st.success("🛠️ **Status**\nLogic is active and running.")
 
-    # B. Daily Quotes Section
+    
+# --- B. Daily Quotes Section (Internet Version) ---
     st.divider()
-    st.subheader("💡 Daily Engineering Inspiration")
-    quotes = [
-        "“The only way to do great work is to love what you do.” – Steve Jobs",
-        "“First, solve the problem. Then, write the code.” – John Johnson",
-        "“Engineering is not only about building things, it's about solving problems.”",
-        "“Your most unhappy customers are your greatest source of learning.” – Bill Gates",
-        "“Stay hungry, stay foolish.” – Steve Jobs"
-    ]
-    day_of_year = datetime.datetime.now().timetuple().tm_yday
-    st.info(quotes[day_of_year % len(quotes)])
+    st.subheader("💡 Today's Inspiration")
+
+    def get_daily_sticky_quote():
+        try:
+            # We use the '/today' endpoint instead of '/random'
+            response = requests.get("https://zenquotes.io/api/today")
+            if response.status_code == 200:
+                data = response.json()
+                # This data only changes once every 24 hours at the server level
+                return f"“{data[0]['q']}” – {data[0]['a']}"
+            else:
+                return "“The best way to predict the future is to invent it.” – Alan Kay"
+        except Exception:
+            return "“Keep pushing forward, Kaushalkumar!”"
+
+    # Display the quote
+    st.info(get_daily_sticky_quote())
+
 
     # C. Timer Section
     if 'timer_running' not in st.session_state:
