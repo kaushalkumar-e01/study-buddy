@@ -1,7 +1,8 @@
 import time
+import datetime
 import streamlit as st
-import base64
 
+# --- 1. FUNCTIONS ---
 def play_sound():
     # Ensure 'timer_sound.mp3' is in your project folder!
     sound_url = "timer_sound.mp3" 
@@ -12,10 +13,10 @@ def play_sound():
     """
     st.components.v1.html(html_string, height=0)
 
-# 1. Page Config
+# --- 2. PAGE CONFIG ---
 st.set_page_config(page_title="Study Buddy", page_icon="🎒", layout="wide", initial_sidebar_state="collapsed")
 
-# 2. Custom CSS (Your existing CSS remains the same)
+# --- 3. CUSTOM CSS ---
 st.markdown("""
     <style>
     .main { background-color: #f8f9fa; }
@@ -34,16 +35,23 @@ st.markdown("""
         font-weight: bold;
     }
     .menu-header { color: #4CAF50; font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+    .stopwatch-display {
+        font-family: 'Courier New', Courier, monospace;
+        color: #4CAF50; font-size: 50px; font-weight: bold;
+        background: #2c3e50; padding: 10px 20px; border-radius: 10px;
+        text-align: center; border: 2px solid #ecf0f1; margin: 10px 0;
+    }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. Sidebar Menu
+# --- 4. SIDEBAR MENU ---
 with st.sidebar:
     st.markdown('<p class="menu-header">📌 Main Menu</p>', unsafe_allow_html=True)
     page = st.radio("", ["Home", "About"], label_visibility="collapsed")
 
-# 4. Main Page Content
+# --- 5. MAIN PAGE CONTENT ---
 if page == "Home":
+    # A. Greeting Card
     st.markdown(f"""
         <div class="greeting-card">
             <div class="greeting-text">Hello, Kaushalkumar! 👋</div>
@@ -53,13 +61,26 @@ if page == "Home":
         </div>
     """, unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
-    with col1:
+    col_info1, col_info2 = st.columns(2)
+    with col_info1:
         st.info("🚀 **Project Mission**\nCreating a secure productivity tool.")
-    with col2:
+    with col_info2:
         st.success("🛠️ **Status**\nLogic is active and running.")
 
-    # --- TIMER SECTION ---
+    # B. Daily Quotes Section
+    st.divider()
+    st.subheader("💡 Daily Engineering Inspiration")
+    quotes = [
+        "“The only way to do great work is to love what you do.” – Steve Jobs",
+        "“First, solve the problem. Then, write the code.” – John Johnson",
+        "“Engineering is not only about building things, it's about solving problems.”",
+        "“Your most unhappy customers are your greatest source of learning.” – Bill Gates",
+        "“Stay hungry, stay foolish.” – Steve Jobs"
+    ]
+    day_of_year = datetime.datetime.now().timetuple().tm_yday
+    st.info(quotes[day_of_year % len(quotes)])
+
+    # C. Timer Section
     if 'timer_running' not in st.session_state:
         st.session_state.timer_running = False
     if 'current_seconds' not in st.session_state:
@@ -67,13 +88,11 @@ if page == "Home":
 
     st.divider()
     st.subheader("⏳ Focus Timer")
-
     t_col1, t_col2 = st.columns([1, 2])
 
     with t_col1:
         input_mins = st.number_input("Set Minutes", min_value=1, value=25, 
                                      disabled=st.session_state.current_seconds > 0)
-        
         if not st.session_state.timer_running:
             btn_label = "Resume" if st.session_state.current_seconds > 0 else "Start Focusing"
             if st.button(btn_label, use_container_width=True):
@@ -81,7 +100,6 @@ if page == "Home":
                     st.session_state.current_seconds = input_mins * 60
                 st.session_state.timer_running = True
                 st.rerun()
-                
             if st.session_state.current_seconds > 0:
                 if st.button("Reset Timer", type="secondary", use_container_width=True):
                     st.session_state.current_seconds = 0
@@ -97,117 +115,60 @@ if page == "Home":
             empty_slot = st.empty()
             progress_bar = st.progress(0)
             total_possible = input_mins * 60
-            
             while st.session_state.current_seconds > 0 and st.session_state.timer_running:
-                mins, secs = divmod(st.session_state.current_seconds, 60)
-                empty_slot.metric("Time Remaining", f"{mins:02d}:{secs:02d}")
-                progress_val = 1.0 - (st.session_state.current_seconds / total_possible)
-                progress_bar.progress(min(progress_val, 1.0))
-                
+                m, s = divmod(st.session_state.current_seconds, 60)
+                empty_slot.metric("Time Remaining", f"{m:02d}:{s:02d}")
+                progress_bar.progress(min(1.0 - (st.session_state.current_seconds / total_possible), 1.0))
                 time.sleep(1)
                 st.session_state.current_seconds -= 1
-                
-                # Completion Logic inside the loop
                 if st.session_state.current_seconds == 0:
                     st.session_state.timer_running = False
-                    empty_slot.metric("Time Remaining", "00:00")
-                    progress_bar.progress(1.0)
                     st.success("🎉 Session complete! Great work, Kaushalkumar. ☕")
                     play_sound()
                     time.sleep(2)
-                    st.session_state.current_seconds = 0
                     st.rerun()
-            
-            # If manually stopped
             if not st.session_state.timer_running and st.session_state.current_seconds > 0:
-                mins, secs = divmod(st.session_state.current_seconds, 60)
-                empty_slot.metric("Time Paused", f"{mins:02d}:{secs:02d}")
+                m, s = divmod(st.session_state.current_seconds, 60)
+                empty_slot.metric("Time Paused", f"{m:02d}:{s:02d}")
         else:
-            st.info("Ready for a session? Set your time and hit Start!")
+            st.info("Ready for a session?")
+
+    # D. Stopwatch Section
+    if 'sw_running' not in st.session_state:
+        st.session_state.sw_running = False
+    if 'sw_seconds' not in st.session_state:
+        st.session_state.sw_seconds = 0
+
+    st.divider()
+    st.subheader("⏱️ Session Stopwatch")
+    sw_col1, sw_col2 = st.columns([1, 2])
+
+    with sw_col1:
+        if not st.session_state.sw_running:
+            if st.button("Start Tracking", use_container_width=True, type="primary"):
+                st.session_state.sw_running = True
+                st.rerun()
+            if st.session_state.sw_seconds > 0:
+                if st.button("Clear Stopwatch", use_container_width=True):
+                    st.session_state.sw_seconds = 0
+                    st.rerun()
+        else:
+            if st.button("Stop Tracking", use_container_width=True):
+                st.session_state.sw_running = False
+                st.rerun()
+
+    with sw_col2:
+        sw_display = st.empty()
+        while st.session_state.sw_running:
+            mm, ss = divmod(st.session_state.sw_seconds, 60)
+            hh, mm = divmod(mm, 60)
+            sw_display.markdown(f'<div class="stopwatch-display">{hh:02d}:{mm:02d}:{ss:02d}</div>', unsafe_allow_html=True)
+            time.sleep(1)
+            st.session_state.sw_seconds += 1
+        mm, ss = divmod(st.session_state.sw_seconds, 60)
+        hh, mm = divmod(mm, 60)
+        sw_display.markdown(f'<div class="stopwatch-display">{hh:02d}:{mm:02d}:{ss:02d}</div>', unsafe_allow_html=True)
 
 elif page == "About":
     st.title("📖 About Study Buddy")
     st.write("A professional-grade productivity application designed by Kaushalkumar.")
-
-# 1. Initialize Stopwatch States
-if 'sw_running' not in st.session_state:
-    st.session_state.sw_running = False
-if 'sw_seconds' not in st.session_state:
-    st.session_state.sw_seconds = 0
-
-st.divider()
-st.subheader("⏱️ Session Stopwatch")
-
-# 2. Custom CSS for a Digital Look
-st.markdown("""
-    <style>
-    .stopwatch-display {
-        font-family: 'Courier New', Courier, monospace;
-        color: #4CAF50;
-        font-size: 50px;
-        font-weight: bold;
-        background: #2c3e50;
-        padding: 10px 20px;
-        border-radius: 10px;
-        text-align: center;
-        border: 2px solid #ecf0f1;
-        margin: 10px 0;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-sw_col1, sw_col2 = st.columns([1, 2])
-
-with sw_col1:
-    if not st.session_state.sw_running:
-        if st.button("Start Tracking", use_container_width=True, type="primary"):
-            st.session_state.sw_running = True
-            st.rerun()
-        if st.session_state.sw_seconds > 0:
-            if st.button("Clear Stopwatch", use_container_width=True):
-                st.session_state.sw_seconds = 0
-                st.rerun()
-    else:
-        if st.button("Stop Tracking", use_container_width=True):
-            st.session_state.sw_running = False
-            st.rerun()
-
-with sw_col2:
-    sw_display = st.empty()
-    
-    # 3. The Running Loop
-    while st.session_state.sw_running:
-        mins, secs = divmod(st.session_state.sw_seconds, 60)
-        hours, mins = divmod(mins, 60)
-        time_str = f"{hours:02d}:{mins:02d}:{secs:02d}"
-        
-        sw_display.markdown(f'<div class="stopwatch-display">{time_str}</div>', unsafe_allow_html=True)
-        
-        time.sleep(1)
-        st.session_state.sw_seconds += 1
-    
-    # 4. Show the "Frozen" time when stopped
-    mins, secs = divmod(st.session_state.sw_seconds, 60)
-    hours, mins = divmod(mins, 60)
-    time_str = f"{hours:02d}:{mins:02d}:{secs:02d}"
-    sw_display.markdown(f'<div class="stopwatch-display">{time_str}</div>', unsafe_allow_html=True)
-
-import datetime
-
-st.divider()
-st.subheader("💡 Daily Engineering Inspiration")
-
-# A few professional quotes for your portal
-quotes = [
-    "“The only way to do great work is to love what you do.” – Steve Jobs",
-    "“First, solve the problem. Then, write the code.” – John Johnson",
-    "“Engineering is not only about building things, it's about solving problems.”",
-    "“Your most unhappy customers are your greatest source of learning.” – Bill Gates",
-    "“Stay hungry, stay foolish.” – Steve Jobs"
-]
-
-# This logic picks a quote based on the day of the year
-day_of_year = datetime.datetime.now().timetuple().tm_yday
-quote_index = day_of_year % len(quotes)
-
-st.info(quotes[quote_index])
