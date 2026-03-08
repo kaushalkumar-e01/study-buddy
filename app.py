@@ -128,3 +128,66 @@ if page == "Home":
 elif page == "About":
     st.title("📖 About Study Buddy")
     st.write("A professional-grade productivity application designed by Kaushalkumar.")
+
+# 1. Initialize Stopwatch States
+if 'sw_running' not in st.session_state:
+    st.session_state.sw_running = False
+if 'sw_seconds' not in st.session_state:
+    st.session_state.sw_seconds = 0
+
+st.divider()
+st.subheader("⏱️ Session Stopwatch")
+
+# 2. Custom CSS for a Digital Look
+st.markdown("""
+    <style>
+    .stopwatch-display {
+        font-family: 'Courier New', Courier, monospace;
+        color: #4CAF50;
+        font-size: 50px;
+        font-weight: bold;
+        background: #2c3e50;
+        padding: 10px 20px;
+        border-radius: 10px;
+        text-align: center;
+        border: 2px solid #ecf0f1;
+        margin: 10px 0;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+sw_col1, sw_col2 = st.columns([1, 2])
+
+with sw_col1:
+    if not st.session_state.sw_running:
+        if st.button("Start Tracking", use_container_width=True, type="primary"):
+            st.session_state.sw_running = True
+            st.rerun()
+        if st.session_state.sw_seconds > 0:
+            if st.button("Clear Stopwatch", use_container_width=True):
+                st.session_state.sw_seconds = 0
+                st.rerun()
+    else:
+        if st.button("Stop Tracking", use_container_width=True):
+            st.session_state.sw_running = False
+            st.rerun()
+
+with sw_col2:
+    sw_display = st.empty()
+    
+    # 3. The Running Loop
+    while st.session_state.sw_running:
+        mins, secs = divmod(st.session_state.sw_seconds, 60)
+        hours, mins = divmod(mins, 60)
+        time_str = f"{hours:02d}:{mins:02d}:{secs:02d}"
+        
+        sw_display.markdown(f'<div class="stopwatch-display">{time_str}</div>', unsafe_allow_html=True)
+        
+        time.sleep(1)
+        st.session_state.sw_seconds += 1
+    
+    # 4. Show the "Frozen" time when stopped
+    mins, secs = divmod(st.session_state.sw_seconds, 60)
+    hours, mins = divmod(mins, 60)
+    time_str = f"{hours:02d}:{mins:02d}:{secs:02d}"
+    sw_display.markdown(f'<div class="stopwatch-display">{time_str}</div>', unsafe_allow_html=True)
