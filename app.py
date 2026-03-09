@@ -2,6 +2,8 @@ import time
 import datetime
 import requests
 import streamlit as st
+import csv
+import os
 
 # --- 1. FUNCTIONS ---
 def play_sound():
@@ -182,3 +184,43 @@ if page == "Home":
 elif page == "About":
     st.title("📖 About Study Buddy")
     st.write("A professional-grade productivity application designed by Kaushalkumar.")
+
+import csv
+import os
+
+# --- E. Secure Study Log Storage ---
+st.divider()
+st.subheader("📝 Secure Study Journal")
+
+# Define the filename
+LOG_FILE = "study_data.csv"
+
+# Function to save data safely
+def save_study_data(subject, notes):
+    file_exists = os.path.isfile(LOG_FILE)
+    with open(LOG_FILE, mode='a', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        # Add a header if the file is new
+        if not file_exists:
+            writer.writerow(["Date", "Subject", "Notes"])
+        writer.writerow([datetime.datetime.now().strftime("%Y-%m-%d"), subject, notes])
+
+with st.form("study_form", clear_on_submit=True):
+    sub = st.selectbox("What did you study?", ["Python", "C Programming", "Math", "AR/3D Printing"])
+    note = st.text_area("Key takeaways for today:")
+    submit = st.form_submit_button("Lock in Journal")
+
+    if submit:
+        if note:
+            save_study_data(sub, note)
+            st.success(f"✅ Securely saved your {sub} progress!")
+        else:
+            st.warning("Please write something before saving.")
+
+# --- View Past Logs ---
+if st.checkbox("Show my past study entries"):
+    if os.path.isfile(LOG_FILE):
+        with open(LOG_FILE, mode='r') as f:
+            st.table(csv.DictReader(f))
+    else:
+        st.info("No logs found yet. Start studying!")
