@@ -185,42 +185,47 @@ elif page == "About":
     st.title("📖 About Study Buddy")
     st.write("A professional-grade productivity application designed by Kaushalkumar.")
 
-import csv
-import os
 
-# --- E. Secure Study Log Storage ---
+
+
+# --- E. Secure Study Journal---
 st.divider()
 st.subheader("📝 Secure Study Journal")
 
-# Define the filename
 LOG_FILE = "study_data.csv"
 
-# Function to save data safely
+# Function to save data remains the same
 def save_study_data(subject, notes):
     file_exists = os.path.isfile(LOG_FILE)
     with open(LOG_FILE, mode='a', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        # Add a header if the file is new
         if not file_exists:
             writer.writerow(["Date", "Subject", "Notes"])
         writer.writerow([datetime.datetime.now().strftime("%Y-%m-%d"), subject, notes])
 
+# We use a form to group the inputs
 with st.form("study_form", clear_on_submit=True):
-    sub = st.selectbox("What did you study?", ["Python", "C Programming", "Math", "AR/3D Printing"])
+    # 1. Text input for the subject instead of a selectbox
+    sub = st.text_input("What subject did you study?", placeholder="e.g., Python, C, AR Research")
     note = st.text_area("Key takeaways for today:")
     submit = st.form_submit_button("Lock in Journal")
 
     if submit:
-        if note:
+        if sub and note:
             save_study_data(sub, note)
-            st.success(f"✅ Securely saved your {sub} progress!")
+            
+            # 2. Logic to show message and make it disappear
+            msg_container = st.empty() # Create a placeholder
+            msg_container.success(f"✅ Securely saved your {sub} progress!")
+            time.sleep(2) # Wait for 2 seconds
+            msg_container.empty() # Clear the message
         else:
-            st.warning("Please write something before saving.")
+            st.warning("Please fill in both the subject and notes.")
 
-# --- View Past Logs ---
+# View Past Logs logic remains the same
 if st.checkbox("Show my past study entries"):
     if os.path.isfile(LOG_FILE):
         with open(LOG_FILE, mode='r') as f:
             st.table(csv.DictReader(f))
     else:
-        st.info("No logs found yet. Start studying!")
+        st.info("No logs found yet.")
