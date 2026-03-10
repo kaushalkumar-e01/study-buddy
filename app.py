@@ -20,32 +20,37 @@ def play_sound():
 st.set_page_config(page_title="Study Buddy", page_icon="🎒", layout="wide", initial_sidebar_state="collapsed")
 
 # --- 3. CUSTOM CSS ---
+
 st.markdown("""
     <style>
-    .main { background-color: #f8f9fa; }
-    .greeting-card {
-        background-color: #ffffff;
-        padding: 30px;
+    .main {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    .stApp {
+        background: transparent;
+    }
+    .glass-card {
+        background: rgba(255, 255, 255, 0.25);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
         border-radius: 15px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        border-left: 8px solid #4CAF50;
-        margin-bottom: 25px;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        padding: 25px;
+        margin-bottom: 20px;
+        color: #1e2a38;
     }
     .greeting-text {
-        color: #2c3e50;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        font-size: 28px;
-        font-weight: bold;
-    }
-    .menu-header { color: #4CAF50; font-size: 20px; font-weight: 600; margin-bottom: 20px; }
-    .stopwatch-display {
-        font-family: 'Courier New', Courier, monospace;
-        color: #4CAF50; font-size: 50px; font-weight: bold;
-        background: #2c3e50; padding: 10px 20px; border-radius: 10px;
-        text-align: center; border: 2px solid #ecf0f1; margin: 10px 0;
+        font-family: 'Inter', sans-serif;
+        font-size: 32px;
+        font-weight: 800;
+        background: -webkit-linear-gradient(#2c3e50, #4ca1af);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
     </style>
     """, unsafe_allow_html=True)
+
 
 # --- 4. SIDEBAR MENU ---
 with st.sidebar:
