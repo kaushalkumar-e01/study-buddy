@@ -47,15 +47,40 @@ st.markdown("""
         background: -webkit-linear-gradient(#2c3e50, #4ca1af);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
+    }      
+    /* Style for the Horizontal Radio Menu */
+    div[data-testid="stHorizontalBlock"] {
+        padding: 0px 20px;
     }
+
+    /* Make the buttons look like tabs */
+    div[data-testid="stWidgetLabel"] {
+        display: none;
+    }
+    
+    .st-emotion-cache-183szu1 {
+        flex-direction: row;
+        justify-content: center;
+        gap: 20px;
+    }
+    
     </style>
     """, unsafe_allow_html=True)
 
 
-# --- 4. SIDEBAR MENU ---
-with st.sidebar:
-    st.markdown('<p class="menu-header">📌 Main Menu</p>', unsafe_allow_html=True)
-    page = st.radio("", ["Home", "About"], label_visibility="collapsed")
+# --- NEW TOP NAVIGATION ---
+# We use st.columns to center the menu or just st.radio with horizontal=True
+
+st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+page = st.radio(
+    label="Navigate Portal",
+    options=["Home", "Study Journal", "Timer/Stopwatch", "About"],
+    horizontal=True,  # This makes it a Top Bar!
+    label_visibility="collapsed" # Hides the label for a cleaner look
+)
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.divider() # Visual separation
 
 # --- 5. MAIN PAGE CONTENT ---
 if page == "Home":
