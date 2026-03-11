@@ -48,40 +48,45 @@ st.markdown("""
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }      
-    /* Style for the Horizontal Radio Menu */
-    div[data-testid="stHorizontalBlock"] {
-        padding: 0px 20px;
+    /* Style for the Top Navbar Buttons */
+    .stButton > button {
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+        color: #2c3e50;
+        font-weight: bold;
+        transition: 0.3s;
     }
 
-    /* Make the buttons look like tabs */
-    div[data-testid="stWidgetLabel"] {
-        display: none;
-    }
-    
-    .st-emotion-cache-183szu1 {
-        flex-direction: row;
-        justify-content: center;
-        gap: 20px;
+    .stButton > button:hover {
+        background: rgba(76, 161, 175, 0.2); /* Light blue hover */
+        border: 1px solid #4ca1af;
     }
     
     </style>
     """, unsafe_allow_html=True)
 
 
-# --- NEW TOP NAVIGATION ---
-# We use st.columns to center the menu or just st.radio with horizontal=True
-
+# --- TOP NAVIGATION (BUTTON STYLE) ---
 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-page = st.radio(
-    label="Navigate Portal",
-    options=["Home", "Study Journal", "Timer/Stopwatch", "About"],
-    horizontal=True,  # This makes it a Top Bar!
-    label_visibility="collapsed" # Hides the label for a cleaner look
-)
+
+# Create 4 columns, but we only use the middle two to center the buttons
+col1, col2, col3, col4 = st.columns([2, 1, 1, 2])
+
+with col2:
+    if st.button("🏠 Home", use_container_width=True):
+        st.session_state.page = "Home"
+with col3:
+    if st.button("ℹ️ About", use_container_width=True):
+        st.session_state.page = "About"
+
 st.markdown('</div>', unsafe_allow_html=True)
 
-st.divider() # Visual separation
+# Default page if none selected
+if 'page' not in st.session_state:
+    st.session_state.page = "Home"
 
+page = st.session_state.page
 # --- 5. MAIN PAGE CONTENT ---
 if page == "Home":
     # A. Greeting Card
