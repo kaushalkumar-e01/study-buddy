@@ -48,44 +48,62 @@ st.markdown("""
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }      
-    /* Style for the Top Navbar Buttons */
+    .glass-nav {
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 5px 10px !important;
+        margin-bottom: 25px !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+
+    /* This centers the buttons vertically inside the bar */
+    [data-testid="column"] {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Clean up the button appearance */
     .stButton > button {
-        border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        background: rgba(255, 255, 255, 0.1);
-        color: #2c3e50;
-        font-weight: bold;
-        transition: 0.3s;
+        border: none !important;
+        background: transparent !important;
+        transition: transform 0.2s ease !important;
     }
 
     .stButton > button:hover {
-        background: rgba(76, 161, 175, 0.2); /* Light blue hover */
-        border: 1px solid #4ca1af;
+        transform: scale(1.05); /* Slight grow effect */
+        color: #4ca1af !important;
     }
     
     </style>
     """, unsafe_allow_html=True)
 
 
-# --- TOP NAVIGATION (BUTTON STYLE) ---
-st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+# --- TOP NAVIGATION LOGIC ---
+if 'page' not in st.session_state:
+    st.session_state.page = "Home"
 
-# Create 4 columns, but we only use the middle two to center the buttons
-col1, col2, col3, col4 = st.columns([2, 1, 1, 2])
+# Create the glass-card container
+# --- REFINED TOP NAVIGATION ---
+st.markdown('<div class="glass-nav">', unsafe_allow_html=True)
+
+# We use 5 columns: the empty 1st and 5th columns "push" the buttons to the center
+col1, col2, col3, col4, col5 = st.columns([1.5, 1, 1, 1, 1.5])
 
 with col2:
     if st.button("🏠 Home", use_container_width=True):
         st.session_state.page = "Home"
 with col3:
+    if st.button("📚 Journal", use_container_width=True):
+        st.session_state.page = "Study Journal"
+with col4:
     if st.button("ℹ️ About", use_container_width=True):
         st.session_state.page = "About"
 
 st.markdown('</div>', unsafe_allow_html=True)
-
-# Default page if none selected
-if 'page' not in st.session_state:
-    st.session_state.page = "Home"
-
+# CRITICAL: Define 'page' here so the rest of the script can see it
 page = st.session_state.page
 # --- 5. MAIN PAGE CONTENT ---
 if page == "Home":
