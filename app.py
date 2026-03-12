@@ -20,7 +20,6 @@ def play_sound():
 st.set_page_config(page_title="Study Buddy", page_icon="🎒", layout="wide", initial_sidebar_state="collapsed")
 
 # --- 3. CUSTOM CSS ---
-
 st.markdown("""
     <style>
     .main {
@@ -29,17 +28,7 @@ st.markdown("""
     .stApp {
         background: transparent;
     }
-    .glass-card {
-        background: rgba(255, 255, 255, 0.25);
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        backdrop-filter: blur(4px);
-        -webkit-backdrop-filter: blur(4px);
-        border-radius: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        padding: 25px;
-        margin-bottom: 20px;
-        color: #1e2a38;
-    }
+    
     .greeting-text {
         font-family: 'Inter', sans-serif;
         font-size: 32px;
@@ -48,63 +37,64 @@ st.markdown("""
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }      
-    .glass-nav {
-        background: rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
-        border-radius: 15px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 5px 10px !important;
-        margin-bottom: 25px !important;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    }
-
-    /* This centers the buttons vertically inside the bar */
+    
+    /* 1. FORCE BUTTONS TO THE LEFT */
     [data-testid="column"] {
         display: flex;
-        justify-content: center;
+        justify-content: flex-start !important; /* Changed from 'center' to 'flex-start' */
         align-items: center;
+        width: fit-content !important; /* Makes columns only as wide as the button */
+        flex: unset !important;
+        min-width: unset !important;
     }
 
-    /* Clean up the button appearance */
+    /* 2. CLEAN BUTTON STYLE */
     .stButton > button {
         border: none !important;
         background: transparent !important;
+        padding-left: 0px !important; /* Removes left gap */
+        padding-right: 20px !important; /* Adds space between buttons */
         transition: transform 0.2s ease !important;
+        color: #2c3e50 !important;
+        font-weight: 600 !important;
     }
 
     .stButton > button:hover {
-        transform: scale(1.05); /* Slight grow effect */
+        transform: translateY(-2px); /* Slight lift instead of scale */
         color: #4ca1af !important;
+        background: transparent !important;
+    }
+
+    /* 3. HIDE THAT EXTRA BAR */
+    /* If you see a white line or bar, this ensures the container is invisible */
+    .nav-container, .glass-nav, .glass-card {
+        display: none !important;
     }
     
     </style>
     """, unsafe_allow_html=True)
-
-
 # --- TOP NAVIGATION LOGIC ---
+# 1. Initialize 'page' if it doesn't exist yet
 if 'page' not in st.session_state:
     st.session_state.page = "Home"
 
-# Create the glass-card container
-# --- REFINED TOP NAVIGATION ---
-st.markdown('<div class="glass-nav">', unsafe_allow_html=True)
+# 2. Create the buttons
+col1, col2, col3, col_spacer = st.columns([1, 1, 1, 5]) 
 
-# We use 5 columns: the empty 1st and 5th columns "push" the buttons to the center
-col1, col2, col3, col4, col5 = st.columns([1.5, 1, 1, 1, 1.5])
-
-with col2:
+with col1:
     if st.button("🏠 Home", use_container_width=True):
         st.session_state.page = "Home"
-with col3:
+with col2:
     if st.button("📚 Journal", use_container_width=True):
         st.session_state.page = "Study Journal"
-with col4:
+with col3:
     if st.button("ℹ️ About", use_container_width=True):
         st.session_state.page = "About"
 
-st.markdown('</div>', unsafe_allow_html=True)
-# CRITICAL: Define 'page' here so the rest of the script can see it
+# 3. Now assign the variable (This is where your error was)
 page = st.session_state.page
+
+st.divider()
 # --- 5. MAIN PAGE CONTENT ---
 if page == "Home":
     # A. Greeting Card
