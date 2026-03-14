@@ -135,7 +135,7 @@ if page == "Home":
     # Display the quote
     st.info(get_daily_sticky_quote())
 
-
+    st.divider()
    # --- UPGRADED DUAL TRACKER WITH INLINE MESSAGE ---
     dual_tracker_html = """
     <div style="display: flex; justify-content: space-around; flex-wrap: wrap; font-family: 'Segoe UI', Tahoma, sans-serif; color: #2c3e50;">
@@ -198,7 +198,7 @@ if page == "Home":
 
 
 # --- E. Secure Study Journal---
-st.divider()
+#st.divider()
 st.subheader("📝 Secure Study Journal")
 
 LOG_FILE = "study_data.csv"
