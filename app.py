@@ -136,26 +136,23 @@ if page == "Home":
     st.info(get_daily_sticky_quote())
 
 
-   # --- UPGRADED DUAL TRACKER WITH ADJUSTMENT BUTTONS ---
+   # --- UPGRADED DUAL TRACKER WITH INLINE MESSAGE ---
     dual_tracker_html = """
     <div style="display: flex; justify-content: space-around; flex-wrap: wrap; font-family: 'Segoe UI', Tahoma, sans-serif; color: #2c3e50;">
-        
         <div style="text-align: center; background: rgba(255, 255, 255, 0.4); padding: 30px; border-radius: 15px; width: 45%; min-width: 300px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             <h3 style="margin-top: 0; color: #34495e;">⏳ Focus Timer</h3>
-            
             <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin: 15px 0;">
                 <button onclick="adjustTime(-60)" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #4ca1af; background: transparent; color: #4ca1af; font-weight: bold; cursor: pointer;">-</button>
                 <h1 id="timer-display" style="font-size: 50px; margin: 0; color: #4ca1af; min-width: 140px;">25:00</h1>
                 <button onclick="adjustTime(60)" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #4ca1af; background: transparent; color: #4ca1af; font-weight: bold; cursor: pointer;">+</button>
             </div>
-
             <div>
                 <button onclick="startTimer()" style="padding: 10px 15px; margin: 5px; border-radius: 8px; border: none; background: #4ca1af; color: white; font-weight: bold; cursor: pointer;">Start</button>
                 <button onclick="stopTimer()" style="padding: 10px 15px; margin: 5px; border-radius: 8px; border: none; background: #e74c3c; color: white; font-weight: bold; cursor: pointer;">Pause</button>
                 <button onclick="resetTimer()" style="padding: 10px 15px; margin: 5px; border-radius: 8px; border: none; background: #95a5a6; color: white; font-weight: bold; cursor: pointer;">Reset</button>
             </div>
+            <p id="timer-msg" style="color: #4ca1af; font-weight: bold; margin-top: 15px; display: none; font-size: 14px;">🎉 Session complete! Great work, Kaushalkumar.</p>
         </div>
-
         <div style="text-align: center; background: rgba(255, 255, 255, 0.4); padding: 30px; border-radius: 15px; width: 45%; min-width: 300px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             <h3 style="margin-top: 0; color: #34495e;">⏱️ Session Stopwatch</h3>
             <h1 id="sw-display" style="font-size: 50px; margin: 15px 0; color: #4ca1af;">00:00:00</h1>
@@ -165,78 +162,39 @@ if page == "Home":
                 <button onclick="resetSW()" style="padding: 10px 15px; margin: 5px; border-radius: 8px; border: none; background: #95a5a6; color: white; font-weight: bold; cursor: pointer;">Clear</button>
             </div>
         </div>
-
     </div>
-
     <script>
-        // --- TIMER LOGIC ---
-        let timeLeft = 1500; 
-        let timerId = null;
-
+        let timeLeft = 1500; let timerId = null;
         function updateTimer() {
-            let m = Math.floor(timeLeft / 60);
-            let s = timeLeft % 60;
-            document.getElementById('timer-display').innerText = 
-                (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+            let m = Math.floor(timeLeft / 60); let s = timeLeft % 60;
+            document.getElementById('timer-display').innerText = (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
         }
-
-        // ADDED: Adjustment Logic
         function adjustTime(amount) {
-            if (!timerId) { // Only adjust if timer is not currently running
-                if (timeLeft + amount >= 60) {
-                    timeLeft += amount;
-                    updateTimer();
-                }
-            }
+            if (!timerId) { if (timeLeft + amount >= 60) { timeLeft += amount; updateTimer(); document.getElementById('timer-msg').style.display = 'none'; } }
         }
-
         function startTimer() {
             if (!timerId) {
+                document.getElementById('timer-msg').style.display = 'none';
                 timerId = setInterval(() => {
-                    if (timeLeft > 0) {
-                        timeLeft--;
-                        updateTimer();
-                    } else {
-                        clearInterval(timerId);
-                        timerId = null;
-                        alert("🎉 Session complete! Great work, Kaushalkumar.");
-                    }
+                    if (timeLeft > 0) { timeLeft--; updateTimer(); } 
+                    else { clearInterval(timerId); timerId = null; document.getElementById('timer-msg').style.display = 'block'; }
                 }, 1000);
             }
         }
-
         function stopTimer() { clearInterval(timerId); timerId = null; }
-        function resetTimer() { stopTimer(); timeLeft = 1500; updateTimer(); }
-
-        // --- STOPWATCH LOGIC ---
-        let swTime = 0; 
-        let swId = null;
-
+        function resetTimer() { stopTimer(); timeLeft = 1500; updateTimer(); document.getElementById('timer-msg').style.display = 'none'; }
+        let swTime = 0; let swId = null;
         function updateSW() {
-            let h = Math.floor(swTime / 3600);
-            let m = Math.floor((swTime % 3600) / 60);
-            let s = swTime % 60;
-            document.getElementById('sw-display').innerText = 
-                (h < 10 ? "0" : "") + h + ":" + 
-                (m < 10 ? "0" : "") + m + ":" + 
-                (s < 10 ? "0" : "") + s;
+            let h = Math.floor(swTime / 3600); let m = Math.floor((swTime % 3600) / 60); let s = swTime % 60;
+            document.getElementById('sw-display').innerText = (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
         }
-
-        function startSW() {
-            if (!swId) {
-                swId = setInterval(() => {
-                    swTime++;
-                    updateSW();
-                }, 1000);
-            }
-        }
-
+        function startSW() { if (!swId) { swId = setInterval(() => { swTime++; updateSW(); }, 1000); } }
         function stopSW() { clearInterval(swId); swId = null; }
         function resetSW() { stopSW(); swTime = 0; updateSW(); }
     </script>
     """
+    import streamlit.components.v1 as components
     components.html(dual_tracker_html, height=350)
-
 
 
 # --- E. Secure Study Journal---
