@@ -2,6 +2,7 @@ import time
 import datetime
 import requests
 import streamlit as st
+import streamlit.components.v1 as components
 import csv
 import os
 
@@ -135,99 +136,95 @@ if page == "Home":
     st.info(get_daily_sticky_quote())
 
 
-    # C. Timer Section
-    if 'timer_running' not in st.session_state:
-        st.session_state.timer_running = False
-    if 'current_seconds' not in st.session_state:
-        st.session_state.current_seconds = 0
-
+    # --- UPGRADED INSTANT TIMER & STOPWATCH ---
     st.divider()
-    st.subheader("⏳ Focus Timer")
-    t_col1, t_col2 = st.columns([1, 2])
+    
+    # We use a single HTML/JS block for both tools so they run instantly without Streamlit refreshing
+    dual_tracker_html = """
+    <div style="display: flex; justify-content: space-around; flex-wrap: wrap; font-family: 'Segoe UI', Tahoma, sans-serif; color: #2c3e50;">
+        
+        <div style="text-align: center; background: rgba(255, 255, 255, 0.4); padding: 30px; border-radius: 15px; width: 45%; min-width: 300px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <h3 style="margin-top: 0; color: #34495e;">⏳ Focus Timer</h3>
+            <h1 id="timer-display" style="font-size: 50px; margin: 15px 0; color: #4ca1af;">25:00</h1>
+            <div>
+                <button onclick="startTimer()" style="padding: 10px 15px; margin: 5px; border-radius: 8px; border: none; background: #4ca1af; color: white; font-weight: bold; cursor: pointer;">Start</button>
+                <button onclick="stopTimer()" style="padding: 10px 15px; margin: 5px; border-radius: 8px; border: none; background: #e74c3c; color: white; font-weight: bold; cursor: pointer;">Pause</button>
+                <button onclick="resetTimer()" style="padding: 10px 15px; margin: 5px; border-radius: 8px; border: none; background: #95a5a6; color: white; font-weight: bold; cursor: pointer;">Reset</button>
+            </div>
+        </div>
 
-    with t_col1:
-        input_mins = st.number_input("Set Minutes", min_value=1, value=25, 
-                                     disabled=st.session_state.current_seconds > 0)
-        if not st.session_state.timer_running:
-            btn_label = "Resume" if st.session_state.current_seconds > 0 else "Start Focusing"
-            if st.button(btn_label, use_container_width=True):
-                if st.session_state.current_seconds == 0:
-                    st.session_state.current_seconds = input_mins * 60
-                st.session_state.timer_running = True
-                st.rerun()
-            if st.session_state.current_seconds > 0:
-                if st.button("Reset Timer", type="secondary", use_container_width=True):
-                    st.session_state.current_seconds = 0
-                    st.session_state.timer_running = False
-                    st.rerun()
-        else:
-            if st.button("Stop", type="primary", use_container_width=True):
-                st.session_state.timer_running = False
-                st.rerun()
+        <div style="text-align: center; background: rgba(255, 255, 255, 0.4); padding: 30px; border-radius: 15px; width: 45%; min-width: 300px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+            <h3 style="margin-top: 0; color: #34495e;">⏱️ Session Stopwatch</h3>
+            <h1 id="sw-display" style="font-size: 50px; margin: 15px 0; color: #4ca1af;">00:00:00</h1>
+            <div>
+                <button onclick="startSW()" style="padding: 10px 15px; margin: 5px; border-radius: 8px; border: none; background: #4ca1af; color: white; font-weight: bold; cursor: pointer;">Start</button>
+                <button onclick="stopSW()" style="padding: 10px 15px; margin: 5px; border-radius: 8px; border: none; background: #e74c3c; color: white; font-weight: bold; cursor: pointer;">Pause</button>
+                <button onclick="resetSW()" style="padding: 10px 15px; margin: 5px; border-radius: 8px; border: none; background: #95a5a6; color: white; font-weight: bold; cursor: pointer;">Clear</button>
+            </div>
+        </div>
 
-    with t_col2:
-        if st.session_state.current_seconds > 0:
-            empty_slot = st.empty()
-            progress_bar = st.progress(0)
-            total_possible = input_mins * 60
-            while st.session_state.current_seconds > 0 and st.session_state.timer_running:
-                m, s = divmod(st.session_state.current_seconds, 60)
-                empty_slot.metric("Time Remaining", f"{m:02d}:{s:02d}")
-                progress_bar.progress(min(1.0 - (st.session_state.current_seconds / total_possible), 1.0))
-                time.sleep(1)
-                st.session_state.current_seconds -= 1
-                if st.session_state.current_seconds == 0:
-                    st.session_state.timer_running = False
-                    st.success("🎉 Session complete! Great work, Kaushalkumar. ☕")
-                    play_sound()
-                    time.sleep(2)
-                    st.rerun()
-            if not st.session_state.timer_running and st.session_state.current_seconds > 0:
-                m, s = divmod(st.session_state.current_seconds, 60)
-                empty_slot.metric("Time Paused", f"{m:02d}:{s:02d}")
-        else:
-            st.info("Ready for a session?")
+    </div>
 
-    # D. Stopwatch Section
-    if 'sw_running' not in st.session_state:
-        st.session_state.sw_running = False
-    if 'sw_seconds' not in st.session_state:
-        st.session_state.sw_seconds = 0
+    <script>
+        // --- TIMER LOGIC ---
+        let timeLeft = 1500; // 25 minutes
+        let timerId = null;
 
-    st.divider()
-    st.subheader("⏱️ Session Stopwatch")
-    sw_col1, sw_col2 = st.columns([1, 2])
+        function updateTimer() {
+            let m = Math.floor(timeLeft / 60);
+            let s = timeLeft % 60;
+            document.getElementById('timer-display').innerText = 
+                (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+        }
 
-    with sw_col1:
-        if not st.session_state.sw_running:
-            if st.button("Start Tracking", use_container_width=True, type="primary"):
-                st.session_state.sw_running = True
-                st.rerun()
-            if st.session_state.sw_seconds > 0:
-                if st.button("Clear Stopwatch", use_container_width=True):
-                    st.session_state.sw_seconds = 0
-                    st.rerun()
-        else:
-            if st.button("Stop Tracking", use_container_width=True):
-                st.session_state.sw_running = False
-                st.rerun()
+        function startTimer() {
+            if (!timerId) {
+                timerId = setInterval(() => {
+                    if (timeLeft > 0) {
+                        timeLeft--;
+                        updateTimer();
+                    } else {
+                        clearInterval(timerId);
+                        timerId = null;
+                        alert("🎉 Session complete! Great work, Kaushalkumar. ☕");
+                    }
+                }, 1000);
+            }
+        }
 
-    with sw_col2:
-        sw_display = st.empty()
-        while st.session_state.sw_running:
-            mm, ss = divmod(st.session_state.sw_seconds, 60)
-            hh, mm = divmod(mm, 60)
-            sw_display.markdown(f'<div class="stopwatch-display">{hh:02d}:{mm:02d}:{ss:02d}</div>', unsafe_allow_html=True)
-            time.sleep(1)
-            st.session_state.sw_seconds += 1
-        mm, ss = divmod(st.session_state.sw_seconds, 60)
-        hh, mm = divmod(mm, 60)
-        sw_display.markdown(f'<div class="stopwatch-display">{hh:02d}:{mm:02d}:{ss:02d}</div>', unsafe_allow_html=True)
+        function stopTimer() { clearInterval(timerId); timerId = null; }
+        function resetTimer() { stopTimer(); timeLeft = 1500; updateTimer(); }
 
-elif page == "About":
-    st.title("📖 About Study Buddy")
-    st.write("A professional-grade productivity application designed by Kaushalkumar.")
+        // --- STOPWATCH LOGIC ---
+        let swTime = 0; 
+        let swId = null;
 
+        function updateSW() {
+            let h = Math.floor(swTime / 3600);
+            let m = Math.floor((swTime % 3600) / 60);
+            let s = swTime % 60;
+            document.getElementById('sw-display').innerText = 
+                (h < 10 ? "0" : "") + h + ":" + 
+                (m < 10 ? "0" : "") + m + ":" + 
+                (s < 10 ? "0" : "") + s;
+        }
+
+        function startSW() {
+            if (!swId) {
+                swId = setInterval(() => {
+                    swTime++;
+                    updateSW();
+                }, 1000);
+            }
+        }
+
+        function stopSW() { clearInterval(swId); swId = null; }
+        function resetSW() { stopSW(); swTime = 0; updateSW(); }
+    </script>
+    """
+    
+    # Render the combined tools
+    components.html(dual_tracker_html, height=350)
 
 
 
