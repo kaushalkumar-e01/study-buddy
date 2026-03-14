@@ -136,16 +136,19 @@ if page == "Home":
     st.info(get_daily_sticky_quote())
 
 
-    # --- UPGRADED INSTANT TIMER & STOPWATCH ---
-    st.divider()
-    
-    # We use a single HTML/JS block for both tools so they run instantly without Streamlit refreshing
+   # --- UPGRADED DUAL TRACKER WITH ADJUSTMENT BUTTONS ---
     dual_tracker_html = """
     <div style="display: flex; justify-content: space-around; flex-wrap: wrap; font-family: 'Segoe UI', Tahoma, sans-serif; color: #2c3e50;">
         
         <div style="text-align: center; background: rgba(255, 255, 255, 0.4); padding: 30px; border-radius: 15px; width: 45%; min-width: 300px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
             <h3 style="margin-top: 0; color: #34495e;">⏳ Focus Timer</h3>
-            <h1 id="timer-display" style="font-size: 50px; margin: 15px 0; color: #4ca1af;">25:00</h1>
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin: 15px 0;">
+                <button onclick="adjustTime(-60)" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #4ca1af; background: transparent; color: #4ca1af; font-weight: bold; cursor: pointer;">-</button>
+                <h1 id="timer-display" style="font-size: 50px; margin: 0; color: #4ca1af; min-width: 140px;">25:00</h1>
+                <button onclick="adjustTime(60)" style="width: 35px; height: 35px; border-radius: 50%; border: 2px solid #4ca1af; background: transparent; color: #4ca1af; font-weight: bold; cursor: pointer;">+</button>
+            </div>
+
             <div>
                 <button onclick="startTimer()" style="padding: 10px 15px; margin: 5px; border-radius: 8px; border: none; background: #4ca1af; color: white; font-weight: bold; cursor: pointer;">Start</button>
                 <button onclick="stopTimer()" style="padding: 10px 15px; margin: 5px; border-radius: 8px; border: none; background: #e74c3c; color: white; font-weight: bold; cursor: pointer;">Pause</button>
@@ -167,7 +170,7 @@ if page == "Home":
 
     <script>
         // --- TIMER LOGIC ---
-        let timeLeft = 1500; // 25 minutes
+        let timeLeft = 1500; 
         let timerId = null;
 
         function updateTimer() {
@@ -175,6 +178,16 @@ if page == "Home":
             let s = timeLeft % 60;
             document.getElementById('timer-display').innerText = 
                 (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
+        }
+
+        // ADDED: Adjustment Logic
+        function adjustTime(amount) {
+            if (!timerId) { // Only adjust if timer is not currently running
+                if (timeLeft + amount >= 60) {
+                    timeLeft += amount;
+                    updateTimer();
+                }
+            }
         }
 
         function startTimer() {
@@ -186,7 +199,7 @@ if page == "Home":
                     } else {
                         clearInterval(timerId);
                         timerId = null;
-                        alert("🎉 Session complete! Great work, Kaushalkumar. ☕");
+                        alert("🎉 Session complete! Great work, Kaushalkumar.");
                     }
                 }, 1000);
             }
@@ -222,8 +235,6 @@ if page == "Home":
         function resetSW() { stopSW(); swTime = 0; updateSW(); }
     </script>
     """
-    
-    # Render the combined tools
     components.html(dual_tracker_html, height=350)
 
 
