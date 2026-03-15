@@ -5,6 +5,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import csv
 import os
+import pandas as pd
 
 # --- 1. FUNCTIONS ---
 def play_sound():
@@ -20,61 +21,73 @@ def play_sound():
 # --- 2. PAGE CONFIG ---
 st.set_page_config(page_title="Study Buddy", page_icon="🎒", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 3. CUSTOM CSS (MODERN DARK THEME) ---
+# --- 3. CUSTOM CSS (COMBINED & COMPLETE) ---
 st.markdown("""
     <style>
-    /* 1. Deep Space Background */
+    /* 1. Deep Black App Background */
     .stApp {
-        background-color: #000000;
-        background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000000 100%);
+        background-color: #000000 !important;
+        background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000000 100%) !important;
         color: #ffffff;
     }
 
-    /* 2. Professional Navigation Buttons */
+    /* 2. Top Navigation Buttons */
     .stButton > button {
-        border: 1px solid rgba(76, 161, 175, 0.3) !important;
-        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(76, 161, 175, 0.4) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
         color: #ffffff !important;
-        border-radius: 10px !important;
-        padding: 10px 25px !important;
-        transition: all 0.3s ease-in-out !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        font-size: 12px !important;
+        border-radius: 12px !important;
+        padding: 8px 20px !important;
+        transition: all 0.3s ease;
     }
 
     .stButton > button:hover {
         border-color: #4ca1af !important;
-        background: rgba(76, 161, 175, 0.1) !important;
-        box-shadow: 0 0 15px rgba(76, 161, 175, 0.4);
-        transform: translateY(-2px);
+        box-shadow: 0 0 10px rgba(76, 161, 175, 0.5);
     }
 
-    /* 3. Gradient Greeting Text */
+    /* 3. Restyle Info/Success Boxes */
+    [data-testid="stNotification"] {
+        background-color: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 10px !important;
+    }
+
+    [data-testid="stNotificationContentSuccess"] {
+        border-left: 5px solid #64ffda !important; /* Neon Teal line */
+    }
+
+    [data-testid="stNotificationContentInfo"] {
+        border-left: 5px solid #4ca1af !important; /* Muted Teal line */
+    }
+
+    /* 4. Glassmorphism Journal Container */
+    .journal-section {
+        background: rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 30px;
+        margin-top: 20px;
+    }
+
+    /* 5. NEW: Hide Table Index (Hides the 0, 1, 2 column) */
+    thead tr th:first-child, 
+    tbody tr th:first-child, 
+    tbody tr td:first-child {
+        display: none !important;
+    }
+
+    /* Ensure all text stays white */
+    h1, h2, h3, p, label, .stMarkdown {
+        color: #ffffff !important;
+    }
+
+    /* Fix Greeting Text Visibility */
     .greeting-text {
-        font-family: 'Inter', sans-serif;
-        font-size: 36px;
-        font-weight: 800;
-        background: linear-gradient(90deg, #ffffff, #4ca1af);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 10px;
-    }
-
-    /* 4. Left-Aligned Columns Fix */
-    [data-testid="column"] {
-        display: flex;
-        justify-content: flex-start !important;
-        align-items: center;
-        width: fit-content !important;
-        flex: unset !important;
-        min-width: unset !important;
-        gap: 10px !important;
-    }
-
-    /* 5. Clean Divider */
-    hr {
-        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+        font-size: 32px;
+        font-weight: bold;
+        color: #ffffff !important;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -235,10 +248,12 @@ with st.form("study_form", clear_on_submit=True):
         else:
             st.warning("Please fill in both the subject and notes.")
 
-# View Past Logs logic remains the same
+# View Past Logs logic
 if st.checkbox("Show my past study entries"):
     if os.path.isfile(LOG_FILE):
-        with open(LOG_FILE, mode='r') as f:
-            st.table(csv.DictReader(f))
+        df = pd.read_csv(LOG_FILE)
+        
+        # We use st.dataframe here because it has a built-in toggle for the index
+        st.dataframe(df, use_container_width=True, hide_index=True)
     else:
         st.info("No logs found yet.")
