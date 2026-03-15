@@ -20,58 +20,62 @@ def play_sound():
 # --- 2. PAGE CONFIG ---
 st.set_page_config(page_title="Study Buddy", page_icon="🎒", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 3. CUSTOM CSS ---
+# --- 3. CUSTOM CSS (MODERN DARK THEME) ---
 st.markdown("""
     <style>
-    .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    }
+    /* 1. Deep Space Background */
     .stApp {
-        background: transparent;
-    }
-    
-    .greeting-text {
-        font-family: 'Inter', sans-serif;
-        font-size: 32px;
-        font-weight: 800;
-        background: -webkit-linear-gradient(#2c3e50, #4ca1af);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }      
-    
-    /* 1. FORCE BUTTONS TO THE LEFT */
-    [data-testid="column"] {
-        display: flex;
-        justify-content: flex-start !important; /* Changed from 'center' to 'flex-start' */
-        align-items: center;
-        width: fit-content !important; /* Makes columns only as wide as the button */
-        flex: unset !important;
-        min-width: unset !important;
+        background-color: #000000;
+        background-image: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000000 100%);
+        color: #ffffff;
     }
 
-    /* 2. CLEAN BUTTON STYLE */
+    /* 2. Professional Navigation Buttons */
     .stButton > button {
-        border: none !important;
-        background: transparent !important;
-        padding-left: 0px !important; /* Removes left gap */
-        padding-right: 20px !important; /* Adds space between buttons */
-        transition: transform 0.2s ease !important;
-        color: #2c3e50 !important;
-        font-weight: 600 !important;
+        border: 1px solid rgba(76, 161, 175, 0.3) !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        color: #ffffff !important;
+        border-radius: 10px !important;
+        padding: 10px 25px !important;
+        transition: all 0.3s ease-in-out !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 12px !important;
     }
 
     .stButton > button:hover {
-        transform: translateY(-2px); /* Slight lift instead of scale */
-        color: #4ca1af !important;
-        background: transparent !important;
+        border-color: #4ca1af !important;
+        background: rgba(76, 161, 175, 0.1) !important;
+        box-shadow: 0 0 15px rgba(76, 161, 175, 0.4);
+        transform: translateY(-2px);
     }
 
-    /* 3. HIDE THAT EXTRA BAR */
-    /* If you see a white line or bar, this ensures the container is invisible */
-    .nav-container, .glass-nav, .glass-card {
-        display: none !important;
+    /* 3. Gradient Greeting Text */
+    .greeting-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 36px;
+        font-weight: 800;
+        background: linear-gradient(90deg, #ffffff, #4ca1af);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 10px;
     }
-    
+
+    /* 4. Left-Aligned Columns Fix */
+    [data-testid="column"] {
+        display: flex;
+        justify-content: flex-start !important;
+        align-items: center;
+        width: fit-content !important;
+        flex: unset !important;
+        min-width: unset !important;
+        gap: 10px !important;
+    }
+
+    /* 5. Clean Divider */
+    hr {
+        border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
     </style>
     """, unsafe_allow_html=True)
 # --- TOP NAVIGATION LOGIC ---
