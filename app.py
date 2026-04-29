@@ -6,6 +6,7 @@ import streamlit.components.v1 as components
 import csv
 import os
 import pandas as pd
+import updates
 
 # --- 1. DATA LOGIC ---
 LOG_FILE = "study_data.csv"
@@ -91,16 +92,18 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. NAVIGATION ---
+# --- 4. NAVIGATION (Updated to include 4th Button) ---
 if 'page' not in st.session_state:
     st.session_state.page = "Home"
 
-col1, col2, col3, _ = st.columns([1, 1, 1, 5]) 
+col1, col2, col3, col4, _ = st.columns([1, 1, 1.2, 1, 3.8]) 
 with col1:
     if st.button("🏠 Home", use_container_width=True): st.session_state.page = "Home"
 with col2:
     if st.button("📚 Journal", use_container_width=True): st.session_state.page = "Study Journal"
 with col3:
+    if st.button("🌐 Global Stats", use_container_width=True): st.session_state.page = "Global Stats"
+with col4:
     if st.button("ℹ️ About", use_container_width=True): st.session_state.page = "About"
 
 page = st.session_state.page
@@ -190,9 +193,45 @@ if page == "Home":
     </script>
     """, height=280)
 
+elif page == "Global Stats":
+    st.markdown('<div class="greeting-text">🇮🇳 India Live Dashboard</div>', unsafe_allow_html=True)
+    
+    # 1. Finance Section
+    st.subheader("📊 Indian Market & Finance")
+    mkt = updates.get_market_data()
+    m_col1, m_col2, m_col3 = st.columns(3)
+    m_col1.metric("Nifty 50", mkt['Nifty'])
+    m_col2.metric("Sensex", mkt['Sensex'])
+    m_col3.metric("USD / INR", mkt['USD_INR'])
+
+    st.divider()
+    
+    # 2. Live Question Section
+    st.subheader("❓ Daily Question")
+    gk = updates.get_live_question()
+    if gk['q'] == "No Internet":
+        st.warning("⚠️ No Internet connection to fetch a question.")
+    else:
+        st.write(f"**Question:** {gk['q']}")
+        if st.button("Check Answer"):
+            st.success(f"Answer: {gk['a']}")
+
+    st.divider()
+    
+    # 3. News Section
+    st.subheader("📰 Top India Headlines")
+    india_news = updates.get_india_news()
+    if india_news:
+        for item in india_news:
+            st.markdown(f"📍 [{item['title']}]({item['link']})")
+    else:
+        st.error("⚠️ No Internet connection to fetch news.")
+
 elif page == "Study Journal":
     show_journal_ui()
 
 elif page == "About":
+    st.markdown('<div class="journal-section">', unsafe_allow_html=True)
     st.title("About Study Buddy")
     st.write("A professional CSE productivity portal built by Kaushalkumar at BMSCE.")
+    st.markdown('</div>', unsafe_allow_html=True)
