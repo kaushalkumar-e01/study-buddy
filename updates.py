@@ -2,7 +2,9 @@ import requests
 from datetime import datetime
 
 def get_india_news():
+    """Fetches top 10 headlines for India using a reliable RSS-to-JSON mirror."""
     try:
+        # Pulls live Google News India headlines
         url = "https://api.rss2json.com/v1/api.json?rss_url=https://news.google.com/rss/headlines/section/topic/NATION?hl=en-IN&gl=IN&ceid=IN:en"
         headers = {'User-Agent': 'Mozilla/5.0'}
         response = requests.get(url, headers=headers, timeout=15)
@@ -15,27 +17,41 @@ def get_india_news():
         return []
 
 def get_market_data():
+    """Fetches live USD/INR, Nifty 50, and Sensex values from the internet."""
+    market_results = {
+        "Nifty": "Not Updated", 
+        "Sensex": "Not Updated", 
+        "USD_INR": "Not Updated"
+    }
+    
+    # 1. Fetch Live Currency (USD/INR)
     try:
-        # Fetching latest USD/INR from a public API
-        res = requests.get("https://api.exchangerate-api.com/v4/latest/USD", timeout=10).json()
-        usd_to_inr = res['rates']['INR']
-        
-        # We are leaving Nifty and Sensex as "Not Updated" because free APIs 
-        # for NSE/BSE often require paid keys or complex scraping.
-        return {
-            "Nifty": "Not Updated", 
-            "Sensex": "Not Updated", 
-            "USD_INR": f"₹{usd_to_inr:.2f}"
-        }
+        res = requests.get("https://api.exchangerate-api.com/v4/latest/USD", timeout=5).json()
+        market_results["USD_INR"] = f"₹{res['rates']['INR']:.2f}"
     except Exception:
-        # If the internet is down, everything shows as Not Updated
-        return {
-            "Nifty": "Not Updated", 
-            "Sensex": "Not Updated", 
-            "USD_INR": "Not Updated"
-        }
+        pass
+
+    # 2. Fetch Nifty and Sensex via Yahoo Finance Tickers
+    try:
+        # ^NSEI is the ticker for Nifty 50; ^BSESN is for Sensex
+        tickers = {"Nifty": "^NSEI", "Sensex": "^BSESN"}
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        
+        for name, ticker in tickers.items():
+            url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}?interval=1m&range=1d"
+            response = requests.get(url, headers=headers, timeout=10).json()
+            
+            # Extracting the most recent market price from the JSON
+            price = response['chart']['result'][0]['meta']['regularMarketPrice']
+            market_results[name] = f"{price:,.2f}"
+    except Exception:
+        pass 
+
+    return market_results
 
 def get_live_question():
+    """Fetches a real-time historical event about India based on today's date."""
+    # Fallback bank of Indian GK if the API is unreachable
     fallback_bank = [
         {"q": "Who was the first woman Prime Minister of India?", "a": "Indira Gandhi"},
         {"q": "Which river is known as the 'Dakshin Ganga'?", "a": "Godavari"},
@@ -46,9 +62,12 @@ def get_live_question():
     try:
         today = datetime.now()
         month, day = today.strftime("%B"), today.day
+        # Wikipedia API for events occurring on this specific calendar day
         url = f"https://en.wikipedia.org/api/rest_v1/feed/onthisday/all/{today.month}/{today.day}"
         response = requests.get(url, timeout=10).json()
         events = response.get('selected', [])
+        
+        # Smart Filter to prioritize Indian history/politics
         keywords = ["India", "Indian", "Delhi", "Mumbai", "Calcutta", "Madras", "Bengal", "Gandhi", "Nehru"]
         indian_event = next((e for e in events if any(k in e.get('text', '') for k in keywords)), None)
 
@@ -58,6 +77,7 @@ def get_live_question():
                 "a": indian_event.get('text')
             }
         
+        # If no India-specific event exists for today, use the fallback bank
         day_index = today.timetuple().tm_yday % len(fallback_bank)
         return fallback_bank[day_index]
     except Exception:

@@ -8,7 +8,7 @@ import os
 import pandas as pd
 import updates
 
-# --- 1. DATA LOGIC (Exactly as before) ---
+# --- 1. DATA LOGIC (Preserved) ---
 LOG_FILE = "study_data.csv"
 DEADLINE_FILE = "deadlines.csv"
 
@@ -49,7 +49,7 @@ def get_daily_sticky_quote():
 # --- 2. PAGE CONFIG ---
 st.set_page_config(page_title="Study Buddy", page_icon="🎒", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 3. CUSTOM CSS (Exactly as before) ---
+# --- 3. CUSTOM CSS (Preserved) ---
 st.markdown("""
     <style>
     .stApp {
@@ -117,14 +117,6 @@ if page == "Home":
 
     # Deadlines Section
     st.subheader("🎯 Active Missions (Deadlines)")
-    with st.expander("➕ Add New Deadline"):
-        with st.form("deadline_form", clear_on_submit=True):
-            task_name = st.text_input("Task Name")
-            d_date = st.date_input("Due Date")
-            if st.form_submit_button("Deploy Deadline"):
-                if task_name:
-                    save_deadline(task_name, d_date)
-                    st.rerun()
     df_d = get_deadlines()
     if not df_d.empty:
         for _, row in df_d.iterrows():
@@ -186,7 +178,6 @@ elif page == "Global Stats":
     mkt = updates.get_market_data()
     m_col1, m_col2, m_col3 = st.columns(3)
     
-    # Using metrics to show "Not Updated" if values aren't live
     m_col1.metric("Nifty 50", mkt['Nifty'])
     m_col2.metric("Sensex", mkt['Sensex'])
     m_col3.metric("USD / INR", mkt['USD_INR'])
