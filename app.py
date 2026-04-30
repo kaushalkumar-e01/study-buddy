@@ -8,7 +8,7 @@ import os
 import pandas as pd
 import updates
 
-# --- 1. DATA LOGIC ---
+# --- 1. DATA LOGIC (Exactly as before) ---
 LOG_FILE = "study_data.csv"
 DEADLINE_FILE = "deadlines.csv"
 
@@ -49,7 +49,7 @@ def get_daily_sticky_quote():
 # --- 2. PAGE CONFIG ---
 st.set_page_config(page_title="Study Buddy", page_icon="🎒", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 3. CUSTOM CSS ---
+# --- 3. CUSTOM CSS (Exactly as before) ---
 st.markdown("""
     <style>
     .stApp {
@@ -74,25 +74,11 @@ st.markdown("""
         border: 1px solid rgba(255, 255, 255, 0.08) !important;
         border-radius: 10px !important;
     }
-    [data-testid="stNotificationContentSuccess"] { border-left: 5px solid #64ffda !important; }
-    [data-testid="stNotificationContentInfo"] { border-left: 5px solid #4ca1af !important; }
-    
-    .journal-section {
-        background: rgba(255, 255, 255, 0.08) !important;
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 20px;
-        padding: 30px;
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-    thead tr th:first-child, tbody tr th:first-child, tbody tr td:first-child { display: none !important; }
-    h1, h2, h3, p, label, .stMarkdown { color: #ffffff !important; }
     .greeting-text { font-size: 32px; font-weight: bold; color: #ffffff !important; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- 4. NAVIGATION (Updated to include 4th Button) ---
+# --- 4. NAVIGATION ---
 if 'page' not in st.session_state:
     st.session_state.page = "Home"
 
@@ -196,42 +182,40 @@ if page == "Home":
 elif page == "Global Stats":
     st.markdown('<div class="greeting-text">🇮🇳 India Live Dashboard</div>', unsafe_allow_html=True)
     
-    # 1. Finance Section
     st.subheader("📊 Indian Market & Finance")
     mkt = updates.get_market_data()
     m_col1, m_col2, m_col3 = st.columns(3)
+    
+    # Using metrics to show "Not Updated" if values aren't live
     m_col1.metric("Nifty 50", mkt['Nifty'])
     m_col2.metric("Sensex", mkt['Sensex'])
     m_col3.metric("USD / INR", mkt['USD_INR'])
 
     st.divider()
     
-    # 2. Live Question Section
-    st.subheader("❓ Daily Question")
-    gk = updates.get_live_question()
-    if gk['q'] == "No Internet":
-        st.warning("⚠️ No Internet connection to fetch a question.")
-    else:
-        st.write(f"**Question:** {gk['q']}")
-        if st.button("Check Answer"):
-            st.success(f"Answer: {gk['a']}")
+    st.subheader("❓ Today in Indian History")
+    today_date = str(datetime.datetime.now().date())
+    if "daily_q" not in st.session_state or st.session_state.get("q_date") != today_date:
+        st.session_state.daily_q = updates.get_live_question()
+        st.session_state.q_date = today_date
+    
+    gk = st.session_state.daily_q
+    st.info(f"📅 **On this day:** {gk['q']}")
+    st.success(f"📖 **The Fact:** {gk['a']}")
 
     st.divider()
     
-    # 3. News Section
     st.subheader("📰 Top India Headlines")
     india_news = updates.get_india_news()
     if india_news:
         for item in india_news:
             st.markdown(f"📍 [{item['title']}]({item['link']})")
     else:
-        st.error("⚠️ No Internet connection to fetch news.")
+        st.error("⚠️ Unable to fetch news. Please check your connection.")
 
 elif page == "Study Journal":
     show_journal_ui()
 
 elif page == "About":
-    st.markdown('<div class="journal-section">', unsafe_allow_html=True)
     st.title("About Study Buddy")
     st.write("A professional CSE productivity portal built by Kaushalkumar at BMSCE.")
-    st.markdown('</div>', unsafe_allow_html=True)
