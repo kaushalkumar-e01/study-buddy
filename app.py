@@ -208,5 +208,51 @@ elif page == "Study Journal":
     show_journal_ui()
 
 elif page == "About":
-    st.title("About Study Buddy")
-    st.write("A professional CSE productivity portal built by Kaushalkumar at BMSCE.")
+    st.markdown('<div class="greeting-text">System Information & Portfolio</div>', unsafe_allow_html=True)
+    
+    st.markdown('<div class="journal-section">', unsafe_allow_html=True)
+    
+    # --- Professional Header ---
+    st.title("🎒 Study Buddy v2.0")
+    st.markdown("""
+    **Study Buddy** is a centralized productivity ecosystem designed to streamline the academic workflow of 
+    Computer Science Engineering students. Developed with a focus on efficiency, it integrates real-time 
+    financial analytics, global intelligence, and rigorous session tracking into a single dark-mode interface.
+    """)
+    
+    st.divider()
+    
+    # --- Developer & Core Mission ---
+    col_dev, col_miss = st.columns(2)
+    
+    with col_dev:
+        st.subheader("👨‍💻 Developer Profile")
+        st.write("**Name:** Kaushalkumar")
+        st.write("**Affiliation:** CSE Department, BMSCE Bangalore")
+        st.write("**Focus:** Backend Architecture & Algorithmic Logic")
+        
+    with col_miss:
+        st.subheader("🎯 Project Mission")
+        st.write("To reduce cognitive load by centralizing essential academic tools—Deadlines, Daily Logs, and Global Context—into a high-performance dashboard.")
+
+    st.divider()
+
+    # --- Technical Stack (Professional Grid) ---
+    st.subheader("💻 Technical Architecture")
+    t_col1, t_col2, t_col3, t_col4 = st.columns(4)
+    
+    with t_col1:
+        st.code("Streamlit\n(Frontend Framework)")
+    with t_col2:
+        st.code("Python 3.12\n(Logic Engine)")
+    with t_col3:
+        st.code("Pandas/CSV\n(Data Persistence)")
+    with t_col4:
+        st.code("REST APIs\n(Live Intelligence)")
+
+    st.divider()
+
+    # --- Footer Note ---
+    st.caption("© 2026 | Engineered for Academic Excellence at BMS College of Engineering.")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
