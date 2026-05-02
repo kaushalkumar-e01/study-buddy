@@ -226,26 +226,65 @@ elif page == "Study Journal":
     show_journal_ui()
 
 elif page == "About":
-    st.markdown('<div class="greeting-text">System Information & Portfolio</div>', unsafe_allow_html=True)
-    st.markdown('<div class="journal-section">', unsafe_allow_html=True)
-    st.title("🎒 Study Buddy v2.0")
-    st.markdown("""**Study Buddy** is a centralized productivity ecosystem designed to streamline the academic workflow of Computer Science Engineering students.""")
-    st.divider()
-    col_dev, col_miss = st.columns(2)
-    with col_dev:
-        st.subheader("👨‍💻 Developer Profile")
-        st.write("**Name:** Kaushalkumar")
-        st.write("**Affiliation:** CSE Department, BMSCE Bangalore")
-    with col_miss:
-        st.subheader("🎯 Project Mission")
-        st.write("To reduce cognitive load by centralizing essential academic tools into a high-performance dashboard.")
-    st.divider()
-    st.subheader("💻 Technical Architecture")
-    t_col1, t_col2, t_col3, t_col4 = st.columns(4)
-    with t_col1: st.code("Streamlit")
-    with t_col2: st.code("Python 3.12")
-    with t_col3: st.code("Pandas/CSV")
-    with t_col4: st.code("REST APIs")
-    st.divider()
-    st.caption("© 2026 | Engineered for Academic Excellence at BMS College of Engineering.")
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="greeting-text">Developer Portfolio & System Specifications</div>', unsafe_allow_html=True)
+    
+    with st.container():
+        st.markdown('<div class="journal-section">', unsafe_allow_html=True)
+        
+        # --- Project Identity ---
+        st.title("🎒 Study Buddy | Academic OS")
+        st.markdown("""
+        **Study Buddy** is a bespoke productivity ecosystem engineered for the specific workflows of 
+        Computer Science Engineering students. It centralizes volatile data—market analytics, 
+        global news, and mission-critical deadlines—into a single, low-latency dashboard.
+        """)
+        
+        st.divider()
+        
+        # --- Professional Credentials ---
+        col_dev, col_edu = st.columns(2)
+        
+        with col_dev:
+            st.subheader("👨‍💻 Engineering Lead")
+            st.write("**Name:** Kaushalkumar")
+            st.write("**Specialization:** Backend Development & System Architecture")
+            st.write("**Status:** Year I, Computer Science Engineering (Semester 2)")
+            
+        with col_edu:
+            st.subheader("🏫 Institutional Affiliation")
+            st.write("**College:** BMS College of Engineering (BMSCE), Bangalore")
+            st.write("**Department:** Department of Computer Science & Engineering")
+            st.write("**Location:** Bull Temple Rd, Basavanagudi")
+            
+        st.divider()
+
+        # --- Technical Stack (CSE Taxonomy) ---
+        st.subheader("💻 Core Technical Stack")
+        t1, t2, t3, t4 = st.columns(4)
+        
+        with t1:
+            st.info("**Framework**")
+            st.code("Streamlit v1.41")
+        with t2:
+            st.info("**Environment**")
+            st.code("Python 3.12")
+        with t3:
+            st.info("**Persistence**")
+            st.code("CSV / Pandas")
+        with t4:
+            st.info("**Integration**")
+            st.code("RESTful APIs")
+
+        st.divider()
+
+        # --- Vision ---
+        st.subheader("🎯 Core Mission")
+        st.write("""
+        The primary objective of this project is to optimize **Cognitive Resource Management**. 
+        By reducing the 'search cost' for academic deadlines and external context (Markets/News), 
+        the user can maintain a high-state of 'Deep Work' efficiency.
+        """)
+        
+        st.divider()
+        st.caption("© 2026 | Developed by Kaushalkumar for BMSCE CSE Portfolio.")
+        st.markdown('</div>', unsafe_allow_html=True)
