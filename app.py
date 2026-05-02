@@ -8,7 +8,7 @@ import os
 import pandas as pd
 import updates
 
-# --- 1. DATA LOGIC (Preserved) ---
+# --- 1. DATA LOGIC ---
 LOG_FILE = "study_data.csv"
 DEADLINE_FILE = "deadlines.csv"
 
@@ -28,11 +28,20 @@ def save_deadline(task, date):
             writer.writerow(["Task", "Deadline"])
         writer.writerow([task, str(date)])
 
+def remove_deadline(task_to_remove):
+    """Removes a specific task from the CSV and refreshes the UI."""
+    if os.path.isfile(DEADLINE_FILE):
+        df = pd.read_csv(DEADLINE_FILE)
+        df = df[df['Task'] != task_to_remove]
+        df.to_csv(DEADLINE_FILE, index=False)
+        st.rerun()
+
 def get_deadlines():
     if os.path.isfile(DEADLINE_FILE):
         df = pd.read_csv(DEADLINE_FILE)
         df['Deadline'] = pd.to_datetime(df['Deadline'])
-        df['Days Left'] = (df['Deadline'] - pd.Timestamp.now().normalize()).dt.days
+        today = pd.Timestamp.now().normalize()
+        df['Days Left'] = (df['Deadline'] - today).dt.days
         return df.sort_values(by="Deadline")
     return pd.DataFrame()
 
@@ -49,7 +58,7 @@ def get_daily_sticky_quote():
 # --- 2. PAGE CONFIG ---
 st.set_page_config(page_title="Study Buddy", page_icon="🎒", layout="wide", initial_sidebar_state="collapsed")
 
-# --- 3. CUSTOM CSS (Preserved) ---
+# --- 3. CUSTOM CSS ---
 st.markdown("""
     <style>
     .stApp {
@@ -115,26 +124,48 @@ if page == "Home":
     st.markdown(f'<div class="greeting-text">Hello, Kaushalkumar! 👋</div>', unsafe_allow_html=True)
     st.info(f"💡 **Today's Inspiration:** {get_daily_sticky_quote()}")
 
-    # Deadlines Section
     st.subheader("🎯 Active Missions (Deadlines)")
+    with st.expander("➕ Add New Deadline"):
+        with st.form("deadline_form", clear_on_submit=True):
+            task_name = st.text_input("Task Name")
+            d_date = st.date_input("Due Date")
+            if st.form_submit_button("Deploy Deadline"):
+                if task_name:
+                    save_deadline(task_name, d_date)
+                    st.rerun()
+    
     df_d = get_deadlines()
     if not df_d.empty:
-        for _, row in df_d.iterrows():
+        for index, row in df_d.iterrows():
             days = row['Days Left']
-            color = "#e74c3c" if days <= 3 else "#4ca1af" 
-            st.markdown(f"""
-                <div style="border-left: 5px solid {color}; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-                    <span style="font-weight: bold; font-size: 18px; color: white;">{row['Task']}</span>
-                    <span style="float: right; background: {color}; padding: 2px 10px; border-radius: 20px; font-size: 12px;">{days} Days Left</span>
-                </div>
-            """, unsafe_allow_html=True)
+            if days < 0:
+                status_text = f"⚠️ {abs(days)} Days Overdue"
+                color = "#ff4b4b" 
+            elif days == 0:
+                status_text = "🔥 Due Today"
+                color = "#ffa500" 
+            else:
+                status_text = f"⏳ {days} Days Left"
+                color = "#4ca1af" if days > 3 else "#e74c3c"
+
+            d_col, b_col = st.columns([8, 2])
+            with d_col:
+                st.markdown(f"""
+                    <div style="border-left: 5px solid {color}; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px;">
+                        <span style="font-weight: bold; font-size: 18px; color: white;">{row['Task']}</span>
+                        <span style="float: right; color: {color}; font-weight: bold;">{status_text}</span>
+                    </div>
+                """, unsafe_allow_html=True)
+            with b_col:
+                if st.button("✅ Done", key=f"done_{index}", use_container_width=True):
+                    remove_deadline(row['Task'])
+            st.write("") 
     else:
         st.write("No pending missions.")
 
     st.divider()
     show_journal_ui()
 
-    # TIMER & STOPWATCH 
     st.divider()
     components.html("""
     <div style="display: flex; justify-content: space-around; flex-wrap: wrap; font-family: 'Segoe UI'; color: white; text-align: center;">
@@ -177,25 +208,12 @@ elif page == "Global Stats":
     st.subheader("📊 Indian Market & Finance")
     mkt = updates.get_market_data()
     m_col1, m_col2, m_col3 = st.columns(3)
-    
     m_col1.metric("Nifty 50", mkt['Nifty'])
     m_col2.metric("Sensex", mkt['Sensex'])
     m_col3.metric("USD / INR", mkt['USD_INR'])
-
+    
     st.divider()
-    
-    st.subheader("❓ Today in Indian History")
-    today_date = str(datetime.datetime.now().date())
-    if "daily_q" not in st.session_state or st.session_state.get("q_date") != today_date:
-        st.session_state.daily_q = updates.get_live_question()
-        st.session_state.q_date = today_date
-    
-    gk = st.session_state.daily_q
-    st.info(f"📅 **On this day:** {gk['q']}")
-    st.success(f"📖 **The Fact:** {gk['a']}")
 
-    st.divider()
-    
     st.subheader("📰 Top India Headlines")
     india_news = updates.get_india_news()
     if india_news:
@@ -209,50 +227,25 @@ elif page == "Study Journal":
 
 elif page == "About":
     st.markdown('<div class="greeting-text">System Information & Portfolio</div>', unsafe_allow_html=True)
-    
     st.markdown('<div class="journal-section">', unsafe_allow_html=True)
-    
-    # --- Professional Header ---
     st.title("🎒 Study Buddy v2.0")
-    st.markdown("""
-    **Study Buddy** is a centralized productivity ecosystem designed to streamline the academic workflow of 
-    Computer Science Engineering students. Developed with a focus on efficiency, it integrates real-time 
-    financial analytics, global intelligence, and rigorous session tracking into a single dark-mode interface.
-    """)
-    
+    st.markdown("""**Study Buddy** is a centralized productivity ecosystem designed to streamline the academic workflow of Computer Science Engineering students.""")
     st.divider()
-    
-    # --- Developer & Core Mission ---
     col_dev, col_miss = st.columns(2)
-    
     with col_dev:
         st.subheader("👨‍💻 Developer Profile")
         st.write("**Name:** Kaushalkumar")
         st.write("**Affiliation:** CSE Department, BMSCE Bangalore")
-        st.write("**Focus:** Backend Architecture & Algorithmic Logic")
-        
     with col_miss:
         st.subheader("🎯 Project Mission")
-        st.write("To reduce cognitive load by centralizing essential academic tools—Deadlines, Daily Logs, and Global Context—into a high-performance dashboard.")
-
+        st.write("To reduce cognitive load by centralizing essential academic tools into a high-performance dashboard.")
     st.divider()
-
-    # --- Technical Stack (Professional Grid) ---
     st.subheader("💻 Technical Architecture")
     t_col1, t_col2, t_col3, t_col4 = st.columns(4)
-    
-    with t_col1:
-        st.code("Streamlit\n(Frontend Framework)")
-    with t_col2:
-        st.code("Python 3.12\n(Logic Engine)")
-    with t_col3:
-        st.code("Pandas/CSV\n(Data Persistence)")
-    with t_col4:
-        st.code("REST APIs\n(Live Intelligence)")
-
+    with t_col1: st.code("Streamlit")
+    with t_col2: st.code("Python 3.12")
+    with t_col3: st.code("Pandas/CSV")
+    with t_col4: st.code("REST APIs")
     st.divider()
-
-    # --- Footer Note ---
     st.caption("© 2026 | Engineered for Academic Excellence at BMS College of Engineering.")
-    
     st.markdown('</div>', unsafe_allow_html=True)
